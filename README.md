@@ -62,6 +62,11 @@ You can simply change default style of the card specifying CSS variables in your
 | --sc-event-line-color | stroke        | Sunrise, noon and sunset timestamp markers color |
 | --sc-horizon-color    | stroke        | Horizon line color                               |
 | --sc-moon-color       | fill          | Moon fill color                                  |
+
+### Dynamic Day/Night Theming Variables
+
+| Variable              | CSS Attribute | Purpose                                          |
+| --------------------- | ------------- | ------------------------------------------------ |
 | --sc-day-background   | background    | Background of the viewport during daylight       |
 | --sc-night-background | background    | Background of the viewport during night          |
 | --sc-day-moon-color   | fill          | Moon fill color during daylight     (bugged)     |
