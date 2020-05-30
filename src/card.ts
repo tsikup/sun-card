@@ -158,7 +158,9 @@ class SunCard extends LitElement {
     const dayMoon = 'fill: var(--sc-day-moon-color, #F5FBFE);';
     const nightMoon = 'fill: var(--sc-night-moon-color, #F5FBFE);';
 
-    if (this._config.dynamic === true) {
+    const dynamic =  this._config.dynamic ?  this._config.dynamic : false;
+
+    if (dynamic) {
       const dayEventLineColor = 'stroke: var(--sc-day-text-color, #212121);';
       const nightEeventLineColor = 'stroke: var(--sc-night-text-color, #d6d6d6);';
 
