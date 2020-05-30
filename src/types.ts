@@ -19,12 +19,13 @@ export interface SunCardConfig extends LovelaceCardConfig {
   name?: string;
   meridiem?: boolean;
   animation?: boolean;
+  dynamic?: boolean;
 }
 
 export type Coords = {
   x: number;
   y: number;
-}
+};
 
 export interface ITime {
   current_time: moment.Moment;
@@ -85,7 +86,9 @@ export class EntityWrapper {
   }
 
   mutator(): EntityMutator {
-    return (entity) => { this._entity = entity; };
+    return entity => {
+      this._entity = entity;
+    };
   }
 
   constructor(entity: HassEntity) {
@@ -95,5 +98,7 @@ export class EntityWrapper {
 
 export type EntityMutator = (entity: HassEntity) => void;
 
-export interface ValueProvider<R> extends Array<IReader<R>|EntityMutator>
-  {0: IReader<R>, 1: EntityMutator}
+export interface ValueProvider<R> extends Array<IReader<R> | EntityMutator> {
+  0: IReader<R>;
+  1: EntityMutator;
+}

@@ -11,10 +11,7 @@ import {
   PropertyValues,
 } from 'lit-element';
 
-import {
-  HomeAssistant,
-  LovelaceCardEditor,
-} from 'custom-card-helpers';
+import { HomeAssistant, LovelaceCardEditor } from 'custom-card-helpers';
 
 import moment from 'moment';
 import 'moment/min/locales';
@@ -24,24 +21,19 @@ import { HumanizeDurationLanguage, HumanizeDuration } from 'humanize-duration-ts
 
 import { CARD_VERSION, SVG_ICONS } from './const';
 
-import {
-  SunCardConfig,
-  Coords,
-  ISun,
-  IMoon,
-  ITime,
-  EntityMutator,
-} from './types';
+import { SunCardConfig, Coords, ISun, IMoon, ITime, EntityMutator } from './types';
 
 import './editor';
 import { Factory } from './entities';
 
 /* eslint no-console: 0 */
-console.info(`%c SUN-CARD %c ${CARD_VERSION} `,
+console.info(
+  `%c SUN-CARD %c ${CARD_VERSION} `,
   'color: white; background: coral; font-weight: 700;',
-  'color: coral; background: white; font-weight: 700;');
+  'color: coral; background: white; font-weight: 700;',
+);
 
-let updateFunc: EntityMutator|undefined;
+let updateFunc: EntityMutator | undefined;
 
 @customElement('sun-card')
 class SunCard extends LitElement {
@@ -106,9 +98,9 @@ class SunCard extends LitElement {
 
     const oldHass = changedProps.get('_hass') as HomeAssistant | undefined;
     return oldHass
-      ? Object.values(this._config!.entities).some((entityName) => {
-        return oldHass.states[entityName] !== this.hass!.states[entityName];
-      })
+      ? Object.values(this._config!.entities).some(entityName => {
+          return oldHass.states[entityName] !== this.hass!.states[entityName];
+        })
       : false;
   }
 
@@ -121,7 +113,7 @@ class SunCard extends LitElement {
 
       const oldHass = changedProps.get('_hass') as HomeAssistant | undefined;
       if (oldHass && this._provider) {
-        Object.values(this._config!.entities).forEach((entityName) => {
+        Object.values(this._config!.entities).forEach(entityName => {
           if (oldHass.states[entityName] !== this.hass!.states[entityName]) updateFunc!(this.hass!.states[entityName]);
         });
       }
@@ -149,13 +141,63 @@ class SunCard extends LitElement {
       return html``;
     }
 
-    const sun = this.renderSun(this._provider.current_time, this._provider.elevation);
-    const sunBeam = this._config!.animation || this._config!.animation === undefined
-      ? this.renderSunbeam(this._provider.current_time, this._provider.elevation) : null;
+    // --------------------------------------------------------------------------------------------------------------
+    // Day-Night dynamic theming
 
-    const sunrise = this._provider.sunrise ? this.renderSunrise(this._provider.sunrise) : null;
-    const sunset = this._provider.sunset ? this.renderSunset(this._provider.sunset) : null;
-    const noon = this._provider.solar_noon ? this.renderNoon(this._provider.solar_noon) : null;
+    let customBackground =
+      'var(--sc-background, linear-gradient(hsla(205, 86%, 100%, 0.8) 0%,hsla(200, 91%, 90%, 1) 46%, hsla(74, 75%, 50%, 1) 54%, hsla(76, 72%, 50%, 0.8) 100%));';
+    let eventLineColor = 'stroke: var(--sc-event-line-color, #212121);';
+    let textColor = 'var(--primary-text-color)';
+    let moonFill = '';
+
+    const dayBackground =
+      'background: var(--sc-day-background, linear-gradient(hsla(205, 86%, 100%, 0.8) 0%, hsla(200, 91%, 90%, 1) 46%, hsla(74, 75%, 50%, 1) 54%, hsla(76, 72%, 50%, 0.8) 100% ));';
+    const nightBackground =
+      'background: var(--sc-night-background, linear-gradient(hsla(205, 86%, 10%, 0.8) 0%, hsla(200, 91%, 20%, 1) 46%, hsla(74, 75%, 40%, 1) 54%, hsla(76, 72%, 40%, 0.8) 100% ));';
+
+    const dayMoon = 'fill: var(--sc-day-moon-color, #F5FBFE);';
+    const nightMoon = 'fill: var(--sc-night-moon-color, #F5FBFE);';
+
+    if (this._config.dynamic === true) {
+      const dayEventLineColor = 'stroke: var(--sc-day-text-color, #212121);';
+      const nightEeventLineColor = 'stroke: var(--sc-night-text-color, #d6d6d6);';
+
+      const dayTextColor = 'var(--sc-day-text-color, #212121)';
+      const nightTextColor = 'var(--sc-night-text-color, #ffffff)';
+
+      const timeSunSet = Date.parse(this.hass.states['sensor.sunset']?.attributes.today);
+      const currentTime = Date.parse(new Date().toString());
+      const hasSet = currentTime > timeSunSet;
+
+      if (hasSet) {
+        customBackground = nightBackground;
+        moonFill = nightMoon;
+        eventLineColor = nightEeventLineColor;
+        textColor = nightTextColor;
+      } else {
+        customBackground = dayBackground;
+        moonFill = dayMoon;
+        eventLineColor = dayEventLineColor;
+        textColor = dayTextColor;
+      }
+    }
+
+    // END OF Day-Night dynamic theming
+    // --------------------------------------------------------------------------------------------------------------
+
+    const sun = this.renderSun(this._provider.current_time, this._provider.elevation);
+    const sunBeam =
+      this._config!.animation || this._config!.animation === undefined
+        ? this.renderSunbeam(this._provider.current_time, this._provider.elevation)
+        : null;
+
+    const sunrise = this._provider.sunrise
+      ? this.renderSunrise(this._provider.sunrise, eventLineColor, textColor)
+      : null;
+    const sunset = this._provider.sunset ? this.renderSunset(this._provider.sunset, eventLineColor, textColor) : null;
+    const noon = this._provider.solar_noon
+      ? this.renderNoon(this._provider.solar_noon, eventLineColor, textColor)
+      : null;
 
     const moonPhase = this._provider.moon_phase ? this.renderMoon(this._provider.moon_phase) : null;
 
@@ -164,29 +206,35 @@ class SunCard extends LitElement {
 
     let header = this._config.name;
     if (header === undefined)
-      header = this.hass.states['sun.sun']?.attributes.friendly_name
-        || this.hass.localize('domain.sun');
+      header = this.hass.states['sun.sun']?.attributes.friendly_name || this.hass.localize('domain.sun');
     return html`
       <ha-card .header=${header}>
-        <div class="content">
-          <svg class="top" preserveAspectRatio="xMinYMin slice" viewBox="0 -${this.svgViewBoxH / 2} ${this.svgViewBoxW} ${this.svgViewBoxH / 2}" xmlns="http://www.w3.org/2000/svg" version="1.1">
-            ${sunrise}
-            ${sunset}
-            ${sunBeam}
-            ${sun}
+        <div class="content" style=${customBackground}>
+          <svg
+            class="top"
+            preserveAspectRatio="xMinYMin slice"
+            viewBox="0 -${this.svgViewBoxH / 2} ${this.svgViewBoxW} ${this.svgViewBoxH / 2}"
+            xmlns="http://www.w3.org/2000/svg"
+            version="1.1"
+          >
+            ${sunrise} ${sunset} ${sunBeam} ${sun}
           </svg>
-          <svg class="bottom" preserveAspectRatio="xMinYMax slice" viewBox="0 0 ${this.svgViewBoxW} ${this.svgViewBoxH / 2}" xmlns="http://www.w3.org/2000/svg" version="1.1">
+          <svg
+            class="bottom"
+            preserveAspectRatio="xMinYMax slice"
+            viewBox="0 0 ${this.svgViewBoxW} ${this.svgViewBoxH / 2}"
+            xmlns="http://www.w3.org/2000/svg"
+            version="1.1"
+          >
             <line x1="0" y1="0" x2="${this.svgViewBoxW}" y2="0" class="horizon" />
-            ${noon}
-            ${sun}
+            ${noon} ${sun}
           </svg>
-          <div class="moon-icon">
+          <div class="moon-icon" style=${moonFill}>
             ${moonPhase}
           </div>
         </div>
         <div class="info">
-          ${timeToSunset}
-          ${daylight}
+          ${timeToSunset} ${daylight}
         </div>
       </ha-card>
     `;
@@ -206,21 +254,20 @@ class SunCard extends LitElement {
     `;
   }
 
-  renderSunrise(sunrise: moment.Moment): SVGTemplateResult {
+  renderSunrise(sunrise: moment.Moment, eventLineColor: string, textColor: string): SVGTemplateResult {
     if (!sunrise.isValid()) {
       return svg``;
     }
     const timeFormat =
-      this._config!.meridiem === undefined && 'LT' ||
-      this._config!.meridiem === true && 'h:mm A' ||
-      'H:mm';
+      (this._config!.meridiem === undefined && 'LT') || (this._config!.meridiem === true && 'h:mm A') || 'H:mm';
     const eventPos: Coords = this.metric(sunrise, 100);
+
     return svg`
-      <line class="event-line" x1="${eventPos.x}" y1="0" x2="${eventPos.x}" y2="-100"/>
+      <line class="event-line" style=${eventLineColor} x1="${eventPos.x}" y1="0" x2="${eventPos.x}" y2="-100"/>
       <g transform="translate(${eventPos.x - 100},-150)">
-        <svg viewBox="0 0 150 25" preserveAspectRatio="xMinYMin slice" width="300" height="50">
+        <svg style="fill:${textColor};" viewBox="0 0 150 25" preserveAspectRatio="xMinYMin slice" width="300" height="50">
           <path d="${SVG_ICONS.sunrise}"></path>
-          <text class="event-time" dominant-baseline="middle" x="25" y="12.5">
+          <text class="event-time" style="color:${textColor};" dominant-baseline="middle" x="25" y="12.5">
             ${sunrise.format(timeFormat)}
           </text>
         </svg>
@@ -228,21 +275,19 @@ class SunCard extends LitElement {
     `;
   }
 
-  renderNoon(noon: moment.Moment): SVGTemplateResult {
+  renderNoon(noon: moment.Moment, eventLineColor: string, textColor: string): SVGTemplateResult {
     if (!noon.isValid()) {
       return svg``;
     }
     const timeFormat =
-      this._config!.meridiem === undefined && 'LT' ||
-      this._config!.meridiem === true && 'h:mm A' ||
-      'H:mm';
+      (this._config!.meridiem === undefined && 'LT') || (this._config!.meridiem === true && 'h:mm A') || 'H:mm';
     const eventPos: Coords = this.metric(noon, 0);
     return svg`
-      <line class="event-line" x1="${eventPos.x}" y1="0" x2="${eventPos.x}" y2="100"/>
+      <line class="event-line" style=${eventLineColor} x1="${eventPos.x}" y1="0" x2="${eventPos.x}" y2="100"/>
       <g transform="translate(${eventPos.x - 100},100)">
-        <svg viewBox="0 0 150 25" preserveAspectRatio="xMinYMin slice" width="300" height="50">
+        <svg style="fill:${textColor};" viewBox="0 0 150 25" preserveAspectRatio="xMinYMin slice" width="300" height="50">
           <path d="${SVG_ICONS.noon}"></path>
-          <text class="event-time" dominant-baseline="middle" x="25" y="12.5">
+          <text class="event-time" style="color:${textColor};" dominant-baseline="middle" x="25" y="12.5">
             ${noon.format(timeFormat)}
           </text>
         </svg>
@@ -250,21 +295,19 @@ class SunCard extends LitElement {
     `;
   }
 
-  renderSunset(sunset: moment.Moment): SVGTemplateResult {
+  renderSunset(sunset: moment.Moment, eventLineColor: string, textColor: string): SVGTemplateResult {
     if (!sunset.isValid()) {
       return svg``;
     }
     const timeFormat =
-      this._config!.meridiem === undefined && 'LT' ||
-      this._config!.meridiem === true && 'h:mm A' ||
-      'H:mm';
+      (this._config!.meridiem === undefined && 'LT') || (this._config!.meridiem === true && 'h:mm A') || 'H:mm';
     const eventPos: Coords = this.metric(sunset, 100);
     return svg`
-      <line class="event-line" x1="${eventPos.x}" y1="0" x2="${eventPos.x}" y2="-100"/>
+      <line class="event-line" style=${eventLineColor} x1="${eventPos.x}" y1="0" x2="${eventPos.x}" y2="-100"/>
       <g transform="translate(${eventPos.x - 100},-150)">
-        <svg viewBox="0 0 150 25" preserveAspectRatio="xMinYMin slice" width="300" height="50">
+        <svg style="fill:${textColor};" viewBox="0 0 150 25" preserveAspectRatio="xMinYMin slice" width="300" height="50">
           <path d="${SVG_ICONS.sunset}"></path>
-          <text class="event-time" dominant-baseline="middle" x="25" y="12.5">
+          <text class="event-time" style="color:${textColor};" dominant-baseline="middle" x="25" y="12.5">
             ${sunset.format(timeFormat)}
           </text>
         </svg>
@@ -321,10 +364,15 @@ class SunCard extends LitElement {
         padding: 8px;
       }
       .content {
-        background: var(--sc-background, linear-gradient(hsla(205, 86%, 100%, 0%)   0%,
-                                                         hsla(200, 91%,  90%)      46%,
-                                                         hsla( 74, 75%,  50%)      54%,
-                                                         hsla( 76, 72%,  50%, 0%) 100%));
+        /* background: var(
+          --sc-background,
+          linear-gradient(
+            hsla(205, 86%, 100%, 0.8) 0%,
+            hsla(200, 91%, 90%, 1) 46%,
+            hsla(74, 75%, 50%, 1) 54%,
+            hsla(76, 72%, 50%, 0.8) 100%
+          )
+        ); */
         display: flex;
         flex-flow: column nowrap;
         position: relative;
@@ -350,7 +398,7 @@ class SunCard extends LitElement {
         font-size: 22px;
       }
       svg .event-line {
-        stroke: var(--sc-event-line-color, #212121);
+        /* stroke: var(--sc-event-line-color, #212121); */
       }
       svg .sun {
         stroke: var(--sc-sun-color, #ffe160);
@@ -358,8 +406,14 @@ class SunCard extends LitElement {
         stroke-linecap: round;
       }
       @keyframes beam {
-        from { opacity: 1; stroke-width: var(--sc-sun-size, 60px); }
-        to   { opacity: 0; stroke-width: calc(2 * var(--sc-sun-size, 60px)); }
+        from {
+          opacity: 1;
+          stroke-width: var(--sc-sun-size, 60px);
+        }
+        to {
+          opacity: 0;
+          stroke-width: calc(2 * var(--sc-sun-size, 60px));
+        }
       }
       svg .sunbeam {
         stroke: var(--sc-sunbeam-color, #fbec5d);
