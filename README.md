@@ -33,6 +33,7 @@ Card options:
 | type     | string  | **Required** | `custom:sun-card` | Type of card, non-modifiable                             |
 | name     | string  | **Optional** | Language specific | Card name visible in header, no header when empty value  |
 | meridiem | boolean | **Optional** | Language specific | Clock format: 12h or 24h                                 |
+| dynamic  | boolean | **Optional** | false             | Turn on or off the dynamic day/night theming             |
 | entities | Object  | **Optional** | -                 | Allows defining entities providing required data         |
 
 Entities options:
@@ -61,6 +62,12 @@ You can simply change default style of the card specifying CSS variables in your
 | --sc-event-line-color | stroke        | Sunrise, noon and sunset timestamp markers color |
 | --sc-horizon-color    | stroke        | Horizon line color                               |
 | --sc-moon-color       | fill          | Moon fill color                                  |
+| --sc-day-background   | background    | Background of the viewport during daylight       |
+| --sc-night-background | background    | Background of the viewport during night          |
+| --sc-day-moon-color   | fill          | Moon fill color during daylight     (bugged)     |
+| --sc-night-moon-color | fill          | Moon fill color during night        (bugged)     |
+| --sc-day-text-color   | color         | Text color during daylight                       |
+| --sc-night-text-color | color         | Text color during night                          |
 
 ## Installation
 
