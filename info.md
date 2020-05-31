@@ -33,6 +33,7 @@ Card options:
 | type     | string  | **Required** | `custom:sun-card` | Type of card, non-modifiable                             |
 | name     | string  | **Optional** | Language specific | Card name visible in header, no header when empty value  |
 | meridiem | boolean | **Optional** | Language specific | Clock format: 12h or 24h                                 |
+| dynamic  | boolean | **Optional** | false             | Turn on or off the dynamic day/night theming             |
 | entities | Object  | **Optional** | -                 | Allows defining entities providing required data         |
 
 Entities options:
