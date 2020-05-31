@@ -145,7 +145,7 @@ class SunCard extends LitElement {
     // Day-Night dynamic theming
 
     let customBackground =
-      'var(--sc-background, linear-gradient(hsla(205, 86%, 100%, 0.8) 0%,hsla(200, 91%, 90%, 1) 46%, hsla(74, 75%, 50%, 1) 54%, hsla(76, 72%, 50%, 0.8) 100%));';
+      'background: var(--sc-background, linear-gradient(hsla(205, 86%, 100%, 0.8) 0%,hsla(200, 91%, 90%, 1) 46%, hsla(74, 75%, 50%, 1) 54%, hsla(76, 72%, 50%, 0.8) 100%));';
     let eventLineColor = 'stroke: var(--sc-event-line-color, #212121);';
     let textColor = 'var(--primary-text-color)';
     let moonFill = '';
