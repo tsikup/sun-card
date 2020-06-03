@@ -11,9 +11,9 @@ import {
   PropertyValues,
 } from 'lit-element';
 
-import { 
-  HomeAssistant, 
-  LovelaceCardEditor 
+import {
+  HomeAssistant,
+  LovelaceCardEditor
 } from 'custom-card-helpers';
 
 import moment from 'moment';
@@ -24,13 +24,13 @@ import { HumanizeDurationLanguage, HumanizeDuration } from 'humanize-duration-ts
 
 import { CARD_VERSION, SVG_ICONS } from './const';
 
-import { 
-  SunCardConfig, 
-  Coords, 
-  ISun, 
-  IMoon, 
-  ITime, 
-  EntityMutator 
+import {
+  SunCardConfig,
+  Coords,
+  ISun,
+  IMoon,
+  ITime,
+  EntityMutator
 } from './types';
 
 import './editor';
@@ -39,9 +39,9 @@ import { Factory } from './entities';
 /* eslint no-console: 0 */
 console.info(`%c SUN-CARD %c ${CARD_VERSION} `,
   'color: white; background: coral; font-weight: 700;',
-  'color: coral; background: white; font-weight: 700;',);
+  'color: coral; background: white; font-weight: 700;');
 
-let updateFunc: EntityMutator | undefined;
+let updateFunc: EntityMutator|undefined;
 
 @customElement('sun-card')
 class SunCard extends LitElement {
@@ -210,7 +210,7 @@ class SunCard extends LitElement {
 
     let header = this._config.name;
     if (header === undefined)
-      header = this.hass.states['sun.sun']?.attributes.friendly_name 
+      header = this.hass.states['sun.sun']?.attributes.friendly_name
         || this.hass.localize('domain.sun');
     return html`
       <ha-card .header=${header}>
@@ -257,8 +257,8 @@ class SunCard extends LitElement {
       return svg``;
     }
     const timeFormat =
-      this._config!.meridiem === undefined && 'LT' || 
-      this._config!.meridiem === true && 'h:mm A' || 
+      this._config!.meridiem === undefined && 'LT' ||
+      this._config!.meridiem === true && 'h:mm A' ||
       'H:mm';
     const eventPos: Coords = this.metric(sunrise, 100);
 
@@ -280,8 +280,8 @@ class SunCard extends LitElement {
       return svg``;
     }
     const timeFormat =
-      this._config!.meridiem === undefined && 'LT' || 
-      this._config!.meridiem === true && 'h:mm A' || 
+      this._config!.meridiem === undefined && 'LT' ||
+      this._config!.meridiem === true && 'h:mm A' ||
       'H:mm';
     const eventPos: Coords = this.metric(noon, 0);
     return svg`
@@ -368,10 +368,10 @@ class SunCard extends LitElement {
         padding: 8px;
       }
       .content {
-        background: var(--sc-background, linear-gradient(hsla(205, 86%, 100%, 0.8) 0%,
-                                                         hsla(200, 91%, 90%, 1) 46%,
-                                                         hsla(74, 75%, 50%, 1) 54%,
-                                                         hsla(76, 72%, 50%, 0.8) 100%));
+        background: var(--sc-background, linear-gradient(hsla(205, 86%, 100%, 0%)   0%,
+                                                         hsla(200, 91%,  90%)      46%,
+                                                         hsla( 74, 75%,  50%)      54%,
+                                                         hsla( 76, 72%,  50%, 0%) 100%));
         display: flex;
         flex-flow: column nowrap;
         position: relative;
@@ -406,7 +406,7 @@ class SunCard extends LitElement {
       }
       @keyframes beam {
         from { opacity: 1; stroke-width: var(--sc-sun-size, 60px); }
-        to { opacity: 0; stroke-width: calc(2 * var(--sc-sun-size, 60px)); }
+        to   { opacity: 0; stroke-width: calc(2 * var(--sc-sun-size, 60px)); }
       }
       svg .sunbeam {
         stroke: var(--sc-sunbeam-color, #fbec5d);
